@@ -1,3 +1,76 @@
+section .data
+TOKEN_TYPE_INT_LIT: dd 0
+section .text
+section .data
+TOKEN_TYPE_CHAR_LIT: dd 1
+section .text
+section .data
+TOKEN_TYPE_BOOL_LIT: dd 2
+section .text
+section .data
+TOKEN_TYPE_FLOAT_LIT: dd 3
+section .text
+section .data
+TOKEN_TYPE_STRING_LIT: dd 4
+section .text
+; ----- Layout: TOKEN -----
+%define TOKEN_size 20
+%define TOKEN.type 0
+%define TOKEN.line 4
+%define TOKEN.column 8
+%define TOKEN.position 12
+%define TOKEN.length 16
+
+global TOKEN.new
+TOKEN.new:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+mov dword [rbp - 4], edi
+mov dword [rbp - 8], esi
+mov dword [rbp - 12], edx
+mov dword [rbp - 16], ecx
+mov dword [rbp - 20], r8d
+mov rdi, TOKEN_size
+call malloc
+mov rcx, rax
+mov eax, dword [rbp - 4]
+mov dword [rcx + 0], eax
+mov eax, dword [rbp - 8]
+mov dword [rcx + 4], eax
+mov eax, dword [rbp - 12]
+mov dword [rcx + 8], eax
+mov eax, dword [rbp - 16]
+mov dword [rcx + 12], eax
+mov eax, dword [rbp - 20]
+mov dword [rcx + 16], eax
+mov rax, rcx
+add rsp, 24
+mov rsp, rbp
+pop rbp
+ret
+
+; ----- Layout: EXPR -----
+%define EXPR_size 4
+%define EXPR.type 0
+
+global EXPR.new
+EXPR.new:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+mov dword [rbp - 4], edi
+mov rdi, EXPR_size
+call malloc
+mov rcx, rax
+mov eax, dword [rbp - 4]
+mov dword [rcx + 0], eax
+mov rax, rcx
+add rsp, 8
+mov rsp, rbp
+pop rbp
+ret
+
 ; ----- Layout: LEXER -----
 %define LEXER_size 16
 %define LEXER.tokens 0
@@ -40,104 +113,110 @@ mov rdx, 2
 cmp rcx, rdx
 setne al
 movzx rax, al
-cmp rax, 0
+mov rbx, rax
+cmp rbx, 0
 je .else0
-mov rax, 1
-mov rdi, rax
+mov r8, 1
+mov rdi, r8
 call exit
+mov r9, rax
 .else0:
-xor rbx, rbx
-mov rbx, qword [rbp - 12]
-mov r8d, 1
-imul r8, 8
-add rbx, r8
-mov qword [rbp - 12], rbx
-xor r9, r9
-mov r9, qword [rbp - 12]
-sub rsp, 8
-mov r9, [r9]
-mov qword [rbp - 24], r9
 xor r10, r10
-mov r10, qword [rbp - 24]
-mov rdi, r10
-call read_file
-mov rdi, rax
-call print_str
+mov r10, qword [rbp - 12]
+mov r11d, 1
+imul r11, 8
+add r10, r11
+mov qword [rbp - 12], r10
+xor r12, r12
+mov r12, qword [rbp - 12]
 sub rsp, 8
+mov r12, [r12]
+mov qword [rbp - 24], r12
+sub rsp, 8
+xor r13, r13
+mov r13, qword [rbp - 24]
+mov rdi, r13
+call strlen
+mov r14, rax
+mov qword [rbp - 32], r14
+xor r15, r15
+mov r15, qword [rbp - 24]
+xor rcx, rcx
+mov ecx, dword [rbp - 32]
+mov rdx, 1
+sub rcx, rdx
+mov rdi, r15
+mov rsi, rcx
+call char_at
+mov rbx, rax
+mov r8, 'u'
+cmp rbx, r8
+setne al
+movzx rax, al
+mov r9, rax
 xor r11, r11
 mov r11, qword [rbp - 24]
+xor r10, r10
+mov r10d, dword [rbp - 32]
+mov r12, 2
+sub r10, r12
 mov rdi, r11
-call strlen
-mov qword [rbp - 32], rax
-xor r12, r12
-mov r12, qword [rbp - 24]
-xor r13, r13
-mov r13d, dword [rbp - 32]
-mov r14, 1
-sub r13, r14
-mov rdi, r12
-mov rsi, r13
+mov rsi, r10
 call char_at
-mov r15, 'u'
-cmp rax, r15
+mov r13, rax
+mov r14, 'q'
+cmp r13, r14
 setne al
 movzx rax, al
-xor rcx, rcx
-mov rcx, qword [rbp - 24]
-xor rdx, rdx
-mov edx, dword [rbp - 32]
-mov rbx, 2
-sub rdx, rbx
-mov rdi, rcx
-mov rsi, rdx
-call char_at
-mov r9, 'q'
-cmp rax, r9
-setne al
-movzx rax, al
-cmp rax, 1
+mov rdx, rax
+cmp r9, 1
 jne .and_end_1
-cmp rax, 1
+cmp rdx, 1
 jne .and_end_1
 mov rax, 1
 jmp .and_done_2
 .and_end_1:
 mov rax, 0
 .and_done_2:
-xor r10, r10
-mov r10, qword [rbp - 24]
-xor r12, r12
-mov r12d, dword [rbp - 32]
-mov r13, 3
-sub r12, r13
-mov rdi, r10
-mov rsi, r12
+mov r15, rax
+xor rcx, rcx
+mov rcx, qword [rbp - 24]
+xor rbx, rbx
+mov ebx, dword [rbp - 32]
+mov r8, 3
+sub rbx, r8
+mov rdi, rcx
+mov rsi, rbx
 call char_at
-mov rbx, '.'
-cmp rax, rbx
+mov r12, rax
+mov r11, '.'
+cmp r12, r11
 setne al
 movzx rax, al
-cmp rax, 1
+mov r10, rax
+cmp r15, 1
 jne .and_end_2
-cmp rax, 1
+cmp r10, 1
 jne .and_end_2
 mov rax, 1
 jmp .and_done_3
 .and_end_2:
 mov rax, 0
 .and_done_3:
-cmp rax, 0
+mov r13, rax
+cmp r13, 0
 je .else3
-mov rcx, 1
-mov rdi, rcx
+mov r14, 1
+mov rdi, r14
 call exit
+mov r9, rax
 .else3:
-mov rdx, 0
-xor rax, rax
-mov rax, rdx
 mov rdi, 10
 call print_char
 mov rdi, rbx
+mov rdx, 0
+xor rax, rax
+mov rax, rdx
 jmp .Lret_main
 .Lret_main:
 mov rsp, rbp
@@ -151,17 +230,19 @@ sub rsp, 16
 mov qword [rbp - 8], rdi
 mov dword [rbp - 12], esi
 sub rsp, 8
-xor rax, rax
-mov rax, qword [rbp - 8]
-xor r10, r10
-mov r10, qword [rbp - 8]
+xor r8, r8
+mov r8, qword [rbp - 8]
+xor rcx, rcx
+mov rcx, qword [rbp - 8]
 xor rbx, rbx
 mov ebx, dword [rbp - 12]
-add r10, rbx
-mov qword [rbp - 24], r10
+add rcx, rbx
+mov qword [rbp - 24], rcx
+xor r12, r12
+mov r12, qword [rbp - 24]
+mov r11b, byte [r12]
 xor rax, rax
-mov rax, qword [rbp - 24]
-mov al, byte [rax]
+mov rax, r11
 jmp .Lret_char_at
 .Lret_char_at:
 mov rsp, rbp
@@ -175,112 +256,148 @@ sub rsp, 16
 mov qword [rbp - 8], rdi
 mov qword [rbp - 16], rsi
 sub rsp, 8
-xor rcx, rcx
-mov rcx, qword [rbp - 8]
-mov rdi, rcx
+xor r15, r15
+mov r15, qword [rbp - 8]
+mov rdi, r15
 call strlen
-mov qword [rbp - 24], rax
+mov r10, rax
+mov qword [rbp - 24], r10
 sub rsp, 8
+xor r13, r13
+mov r13, qword [rbp - 16]
+mov rdi, r13
+call strlen
+mov r14, rax
+mov qword [rbp - 32], r14
+xor r9, r9
+mov r9d, dword [rbp - 24]
 xor rdx, rdx
-mov rdx, qword [rbp - 16]
-mov rdi, rdx
-call strlen
-mov qword [rbp - 32], rax
-xor rbx, rbx
-mov ebx, dword [rbp - 24]
-xor r10, r10
-mov r10d, dword [rbp - 32]
-add rbx, r10
-mov rax, 1
-add rbx, rax
-mov rdi, rbx
+mov edx, dword [rbp - 32]
+add r9, rdx
+mov rbx, 1
+add r9, rbx
+mov rdi, r9
 call malloc
+mov rcx, rax
 sub rsp, 8
-mov qword [rbp - 40], rax
+mov qword [rbp - 40], rcx
 sub rsp, 8
-xor r10, r10
-mov r10, qword [rbp - 40]
-mov qword [rbp - 48], r10
+xor r12, r12
+mov r12, qword [rbp - 40]
+mov qword [rbp - 48], r12
 sub rsp, 8
-mov rax, 0
-mov dword [rbp - 56], eax
+mov r11, 0
+mov dword [rbp - 56], r11d
 .while_start_4:
-xor rax, rax
-mov eax, dword [rbp - 56]
+xor r15, r15
+mov r15d, dword [rbp - 56]
 xor r10, r10
 mov r10d, dword [rbp - 24]
-cmp rax, r10
+cmp r15, r10
 setl al
 movzx rax, al
-cmp rax, 1
+mov r13, rax
+cmp r13, 1
 jne .while_end_4
-xor rax, rax
-mov rax, qword [rbp - 40]
-xor rax, rax
-mov rax, qword [rbp - 8]
-mov r10b, byte [rax]
-mov byte [rax], r10b
-xor rax, rax
-mov rax, qword [rbp - 40]
-mov eax, 1
-add rax, rax
-mov qword [rbp - 40], rax
-xor rax, rax
-mov rax, qword [rbp - 8]
-mov r10d, 1
-add rax, r10
-mov qword [rbp - 8], rax
-xor rax, rax
-mov eax, dword [rbp - 56]
-mov rax, 1
-add rax, rax
-mov qword [rbp - 56], rax
+xor r14, r14
+mov r14, qword [rbp - 40]
+xor rdx, rdx
+mov rdx, qword [rbp - 8]
+mov bl, byte [rdx]
+mov byte [r14], bl
+xor r9, r9
+mov r9, qword [rbp - 40]
+mov ecx, 1
+add r9, rcx
+mov qword [rbp - 40], r9
+xor r12, r12
+mov r12, qword [rbp - 8]
+mov r11d, 1
+add r12, r11
+mov qword [rbp - 8], r12
+xor r15, r15
+mov r15d, dword [rbp - 56]
+mov r10, 1
+add r15, r10
+mov qword [rbp - 56], r15
 add rsp, 56
 jmp .while_start_4
 .while_end_4:
 mov dword [rbp - 56], 0
 .while_start_5:
-xor r10, r10
-mov r10d, dword [rbp - 56]
-xor rax, rax
-mov eax, dword [rbp - 32]
-cmp r10, rax
+xor r13, r13
+mov r13d, dword [rbp - 56]
+xor rdx, rdx
+mov edx, dword [rbp - 32]
+cmp r13, rdx
 setl al
 movzx rax, al
-cmp rax, 1
+mov r14, rax
+cmp r14, 1
 jne .while_end_5
-xor rax, rax
-mov rax, qword [rbp - 40]
-xor rax, rax
-mov rax, qword [rbp - 16]
-mov r10b, byte [rax]
-mov byte [rax], r10b
-xor rax, rax
-mov rax, qword [rbp - 40]
-mov eax, 1
-add rax, rax
-mov qword [rbp - 40], rax
-xor rax, rax
-mov rax, qword [rbp - 16]
-mov eax, 1
-add rax, rax
-mov qword [rbp - 16], rax
+xor rbx, rbx
+mov rbx, qword [rbp - 40]
+xor rcx, rcx
+mov rcx, qword [rbp - 16]
+mov r9b, byte [rcx]
+mov byte [rbx], r9b
+xor r11, r11
+mov r11, qword [rbp - 40]
+mov r12d, 1
+add r11, r12
+mov qword [rbp - 40], r11
 xor r10, r10
-mov r10d, dword [rbp - 56]
-mov rax, 1
-add r10, rax
-mov qword [rbp - 56], r10
+mov r10, qword [rbp - 16]
+mov r15d, 1
+add r10, r15
+mov qword [rbp - 16], r10
+xor r13, r13
+mov r13d, dword [rbp - 56]
+mov rdx, 1
+add r13, rdx
+mov qword [rbp - 56], r13
 add rsp, 56
 jmp .while_start_5
 .while_end_5:
+xor r14, r14
+mov r14, qword [rbp - 40]
+mov rcx, 0
+mov byte [r14], cl
+xor rbx, rbx
+mov rbx, qword [rbp - 48]
 xor rax, rax
-mov rax, qword [rbp - 40]
-mov rax, 0
-mov byte [rax], al
-xor rax, rax
-mov rax, qword [rbp - 48]
+mov rax, rbx
 jmp .Lret_concat
 .Lret_concat:
+mov rsp, rbp
+pop rbp
+ret
+global substring
+substring:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+mov qword [rbp - 8], rdi
+mov dword [rbp - 12], esi
+mov dword [rbp - 16], edx
+xor r9, r9
+mov r9, qword [rbp - 8]
+mov rdi, r9
+call strlen
+mov r12, rax
+mov r11, 1
+add r12, r11
+mov rdi, r12
+call malloc
+mov r15, rax
+sub rsp, 8
+mov qword [rbp - 24], r15
+xor r10, r10
+mov r10, qword [rbp - 24]
+xor rax, rax
+mov rax, r10
+jmp .Lret_substring
+.Lret_substring:
 mov rsp, rbp
 pop rbp
 ret
@@ -292,51 +409,91 @@ sub rsp, 16
 mov qword [rbp - 8], rdi
 mov byte [rbp - 9], sil
 sub rsp, 8
-xor rax, rax
-mov rax, qword [rbp - 8]
-mov rdi, rax
+xor rdx, rdx
+mov rdx, qword [rbp - 8]
+mov rdi, rdx
 call strlen
-mov qword [rbp - 24], rax
+mov r13, rax
+mov qword [rbp - 24], r13
 sub rsp, 8
-mov r10, 0
-mov dword [rbp - 32], r10d
+mov r14, 0
+mov dword [rbp - 32], r14d
 .while_start_6:
-xor rax, rax
-mov eax, dword [rbp - 32]
-xor rax, rax
-mov eax, dword [rbp - 24]
-cmp rax, rax
+xor rcx, rcx
+mov ecx, dword [rbp - 32]
+xor rbx, rbx
+mov ebx, dword [rbp - 24]
+cmp rcx, rbx
 setl al
 movzx rax, al
-cmp rax, 1
+mov r9, rax
+cmp r9, 1
 jne .while_end_6
-xor r10, r10
-mov r10, qword [rbp - 8]
-xor rax, rax
-mov eax, dword [rbp - 32]
-mov rdi, r10
-mov rsi, rax
+xor r11, r11
+mov r11, qword [rbp - 8]
+xor r12, r12
+mov r12d, dword [rbp - 32]
+mov rdi, r11
+mov rsi, r12
 call char_at
-xor rax, rax
-mov al, byte [rbp - 9]
-cmp rax, rax
+mov r15, rax
+xor r10, r10
+mov r10b, byte [rbp - 9]
+cmp r15, r10
 sete al
 movzx rax, al
-cmp rax, 0
+mov rdx, rax
+cmp rdx, 0
 je .else7
-mov rax, 1
+mov r13, 1
 .else7:
-xor rax, rax
-mov eax, dword [rbp - 32]
-mov rax, 1
-add rax, rax
-mov qword [rbp - 32], rax
+xor r14, r14
+mov r14d, dword [rbp - 32]
+mov rcx, 1
+add r14, rcx
+mov qword [rbp - 32], r14
 add rsp, 32
 jmp .while_start_6
 .while_end_6:
-mov rax, 0
+mov rbx, 0
+xor rax, rax
+mov rax, rbx
 jmp .Lret_contains_char
 .Lret_contains_char:
+mov rsp, rbp
+pop rbp
+ret
+global TOKEN_NEW
+TOKEN_NEW:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+mov dword [rbp - 4], edi
+mov dword [rbp - 8], esi
+mov dword [rbp - 12], edx
+mov dword [rbp - 16], ecx
+mov dword [rbp - 20], r8d
+xor r9, r9
+mov r9d, dword [rbp - 4]
+xor r11, r11
+mov r11d, dword [rbp - 8]
+xor r12, r12
+mov r12d, dword [rbp - 12]
+xor r15, r15
+mov r15d, dword [rbp - 16]
+xor r10, r10
+mov r10d, dword [rbp - 20]
+mov rdi, r9
+mov rsi, r11
+mov rdx, r12
+mov rcx, r15
+mov r8, r10
+call TOKEN.new
+mov rdx, rax
+xor rax, rax
+mov rax, rdx
+jmp .Lret_TOKEN_NEW
+.Lret_TOKEN_NEW:
 mov rsp, rbp
 pop rbp
 ret
