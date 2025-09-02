@@ -143,8 +143,20 @@
 @define TOKEN_TYPE_INT 55;
 @define TOKEN_TYPE_LONG 56;
 
+
+
+@union 
+struct TOKEN_VALUE {
+    int_val: int;
+    float_val: float;
+    long_val: long;
+    str_val: char*;
+    char_val: char;
+}
+
 struct TOKEN {
     type: int;
+    value: TOKEN_VALUE;
     line: int;
     column: int;
     position: int;
@@ -153,7 +165,7 @@ struct TOKEN {
 
 
 def TOKEN_NEW(type: int, line: int, column: int, position: int, len: int) :: TOKEN* {
-    return TOKEN::(type: type, line: line, column: column, position: position, length: len);
+    return TOKEN::(type: type, value: TOKEN_VALUE::(int_val: 0), line: line, column: column, position: position, length: len);
 }
 
 
